@@ -4,11 +4,13 @@ import type { ClientOptions } from 'discord.js'
 import { createLogger } from '../logger.ts'
 
 import { loadCommands } from '../loadCommands.ts'
+import { loadEvents } from '../loadEvents.ts'
 
 export interface CreateBotOptions {
   token: string
   guildId: string
   commandsDirectory: URL
+  eventsDirectory?: URL
   clientOptions: ClientOptions
   logs: boolean
 }
@@ -16,7 +18,21 @@ export interface CreateBotOptions {
 export async function createBot(options: CreateBotOptions): Promise<Client<true>> {
   const logger = createLogger(options.logs)
   const commands = await loadCommands(options.commandsDirectory, logger)
+  const events = options.eventsDirectory ? await loadEvents(options.eventsDirectory, logger) : []
+
   const client = new Client(options.clientOptions)
+
+  for (const handler of events) {
+    client.on(handler.event, async (...args) => {
+      const execute = handler.execute as (...eventArgs: typeof args) => void | Promise<void>
+
+      try {
+        await execute(...args)
+      } catch (error) {
+        logger.error(`Ошибка обработчика события ${handler.event}`, error)
+      }
+    })
+  }
 
   client.on(Events.InteractionCreate, async (interaction) => {
     if (!interaction.isChatInputCommand() || interaction.guildId !== options.guildId) return
