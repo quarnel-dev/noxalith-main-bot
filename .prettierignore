@@ -1,0 +1,17 @@
+node_modules/
+package-lock.json
+
+.env
+.env.*
+!.env.example
+
+/data/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite-journal
+
+coverage/
+*.tsbuildinfo
+*.log
+/logs/
