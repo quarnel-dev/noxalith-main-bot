@@ -13,6 +13,7 @@ const client = await createBot({
   token,
   guildId,
   commandsDirectory: new URL('./commands/', import.meta.url),
+  eventsDirectory: new URL('./events/', import.meta.url),
   clientOptions: {
     intents: [GatewayIntentBits.Guilds],
   },
