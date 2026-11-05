@@ -9,6 +9,7 @@ if (!token) throw new Error('Missing DISCORD_TOKEN')
 if (!guildId) throw new Error(`Missing ${guildIdKey}`)
 
 const client = await createBot({
+  logs: true,
   token,
   guildId,
   commandsDirectory: new URL('./commands/', import.meta.url),
@@ -16,5 +17,3 @@ const client = await createBot({
     intents: [GatewayIntentBits.Guilds],
   },
 })
-
-console.log(`Bot ready: ${client.user.tag}`)
