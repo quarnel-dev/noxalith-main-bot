@@ -7,6 +7,9 @@
     "start": "node --env-file=.env src/main.ts",
     "dev": "DEV=true node --env-file=.env src/main.ts"
   },
+  "imports": {
+    "#core": "./src/core/index.ts"
+  },
   "dependencies": {
     "discord.js": "^14.28.1"
   },
