@@ -6,11 +6,14 @@
             "node"
         ],
         "strict": true,
-        "noEmit": true,
-        "allowImportingTsExtensions": true,
-        "erasableSyntaxOnly": true,
         "verbatimModuleSyntax": true,
-        "skipLibCheck": true
+        "skipLibCheck": true,
+        "rootDir": "./src",
+        "outDir": "./dist",
+        "noEmitOnError": true,
+        "experimentalDecorators": true,
+        "emitDecoratorMetadata": true,
+        "rewriteRelativeImportExtensions": true
     },
     "include": [
         "src/**/*.ts"
