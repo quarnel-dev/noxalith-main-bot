@@ -11,7 +11,8 @@
   "imports": {
     "#core/*": "./dist/core/*.js",
     "#config/*": "./dist/config/*.js",
-    "#features/*": "./dist/features/*.js"
+    "#features/*": "./dist/features/*.js",
+    "#repositories/*": "./dist/repositories/*.js"
   },
   "dependencies": {
     "mongodb": "^7.8.0",
