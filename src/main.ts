@@ -1,5 +1,7 @@
 import { Client, type ParseClient } from 'seyfert'
 
+import { closeMongo, connectMongo } from './core/database/mongo.ts'
+
 declare module 'seyfert' {
   interface SeyfertRegistry {
     client: ParseClient<Client<true>>
@@ -9,21 +11,35 @@ declare module 'seyfert' {
 const guildIdKey = process.env.DEV === 'true' ? 'GUILD_ID_DEV' : 'GUILD_ID'
 const guildId = process.env[guildIdKey]
 
+const mongoUriKey = process.env.DEV === 'true' ? 'MONGODB_URI_DEV' : 'MONGODB_URI'
+const mongoUri = process.env[mongoUriKey]
+
 if (!guildId) throw new Error(`Missing ${guildIdKey}`)
+if (!mongoUri) throw new Error(`Missing ${mongoUriKey}`)
 
 const client = new Client()
 
-await client.start()
+await connectMongo(mongoUri)
+console.info('[MongoDB] Connected')
 
-const commands = client.commands.values
+try {
+  await client.start()
 
-for (const command of commands) {
-  command.guildId = [guildId]
-}
+  const commands = client.commands.values
 
-await client.proxy
-  .applications(client.applicationId)
-  .guilds(guildId)
-  .commands.put({
-    body: commands.map((command) => command.toJSON()),
+  for (const command of commands) {
+    command.guildId = [guildId]
+  }
+
+  await client.proxy
+    .applications(client.applicationId)
+    .guilds(guildId)
+    .commands.put({
+      body: commands.map((command) => command.toJSON()),
+    })
+} catch (error) {
+  await closeMongo().catch((closeError) => {
+    console.error('[MongoDB] Failed to close connection', closeError)
   })
+  throw error
+}
