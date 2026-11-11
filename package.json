@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node --env-file=.env src/main.ts",
-    "dev": "DEV=true node --env-file=.env src/main.ts"
+    "build": "tsc -p tsconfig.json",
+    "start": "node --env-file=.env dist/main.js",
+    "dev": "npm run build && DEV=true node --env-file=.env dist/main.js"
   },
   "imports": {
     "#core": "./src/core/api/index.ts"
