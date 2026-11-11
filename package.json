@@ -8,6 +8,10 @@
     "start": "node --env-file=.env dist/main.js",
     "dev": "npm run build && DEV=true node --env-file=.env dist/main.js"
   },
+  "imports": {
+    "#config/*": "./dist/config/*.js",
+    "#features/*": "./dist/features/*.js"
+  },
   "dependencies": {
     "mongodb": "^7.8.0",
     "seyfert": "5.2.1"
