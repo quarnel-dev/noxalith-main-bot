@@ -1,20 +1,11 @@
-import { GatewayIntentBits } from 'discord.js'
-import { createBot } from '#core'
+import { Client, type ParseClient } from 'seyfert'
 
-const token = process.env.DISCORD_TOKEN
-const guildIdKey = process.env.DEV === 'true' ? 'GUILD_ID_DEV' : 'GUILD_ID'
-const guildId = process.env[guildIdKey]
+declare module 'seyfert' {
+  interface SeyfertRegistry {
+    client: ParseClient<Client<true>>
+  }
+}
 
-if (!token) throw new Error('Missing DISCORD_TOKEN')
-if (!guildId) throw new Error(`Missing ${guildIdKey}`)
+const client = new Client()
 
-await createBot({
-  logs: true,
-  token,
-  guildId,
-  commandsDirectory: new URL('./commands/', import.meta.url),
-  eventsDirectory: new URL('./events/', import.meta.url),
-  clientOptions: {
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent],
-  },
-})
+await client.start()
