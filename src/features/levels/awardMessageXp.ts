@@ -1,7 +1,9 @@
 import { calculateMessageXp } from './calculateMessageXp.ts'
 
+import { addXp } from '#repositories/membersRepository'
+
 const WINDOW_MS = 45_000
-const WINDOW_XP = 20
+const WINDOW_XP = 100
 
 interface XpWindow {
   expiresAt: number
@@ -10,8 +12,22 @@ interface XpWindow {
 }
 
 const windows = new Map<string, XpWindow>()
+const pending = new Map<string, Promise<number>>()
 
-export function awardMessageXp(userId: string, content: string): number {
+export async function awardMessageXp(userId: string, content: string): Promise<number> {
+  const previous = pending.get(userId)
+  const current = (previous ?? Promise.resolve(0)).catch(() => 0).then(() => persistMessageXp(userId, content))
+
+  pending.set(userId, current)
+
+  try {
+    return await current
+  } finally {
+    if (pending.get(userId) === current) pending.delete(userId)
+  }
+}
+
+async function persistMessageXp(userId: string, content: string): Promise<number> {
   const now = performance.now()
   let window = windows.get(userId)
 
@@ -24,6 +40,10 @@ export function awardMessageXp(userId: string, content: string): number {
   const key = getMessageKey(content)
   if (window?.seen.has(key)) return 0
 
+  const awarded = Math.min(xp, window?.remainingXp ?? WINDOW_XP)
+
+  await addXp(userId, awarded)
+
   if (!window) {
     const newWindow: XpWindow = {
       expiresAt: now + WINDOW_MS,
@@ -34,12 +54,14 @@ export function awardMessageXp(userId: string, content: string): number {
     windows.set(userId, newWindow)
     window = newWindow
 
-    setTimeout(() => {
-      if (windows.get(userId) === newWindow) windows.delete(userId)
-    }, WINDOW_MS).unref()
+    setTimeout(
+      () => {
+        if (windows.get(userId) === newWindow) windows.delete(userId)
+      },
+      Math.max(0, newWindow.expiresAt - performance.now())
+    ).unref()
   }
 
-  const awarded = Math.min(xp, window.remainingXp)
   window.seen.add(key)
   window.remainingXp -= awarded
 

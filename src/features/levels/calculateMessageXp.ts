@@ -1,5 +1,4 @@
 const MAX_XP_PER_WORD = 4
-const MAX_XP_PER_MESSAGE = 20
 
 const wordCharacter = /[\p{L}\p{Nd}]/u
 const discordToken = /<(?:@&?\d+|#\d+|a?:[a-zA-Z0-9_]+:\d+)>/g
@@ -14,8 +13,6 @@ export function calculateMessageXp(content: string): number {
     })
     .normalize('NFC')
     .toLowerCase()
-
-  if (xp >= MAX_XP_PER_MESSAGE) return MAX_XP_PER_MESSAGE
 
   let wordXp = 0
   let previous = ''
@@ -32,8 +29,6 @@ export function calculateMessageXp(content: string): number {
     previous = char
     wordXp += 1
     xp += 1
-
-    if (xp === MAX_XP_PER_MESSAGE) break
   }
 
   return xp
