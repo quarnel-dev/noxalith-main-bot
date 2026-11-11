@@ -9,6 +9,7 @@ export default config.bot({
   intents: ['Guilds', 'GuildMessages', 'MessageContent'],
   locations: {
     base: 'dist',
-    commands: 'commands'
+    commands: 'commands',
+    events: 'events'
   },
 })
