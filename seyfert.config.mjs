@@ -10,6 +10,7 @@ export default config.bot({
   locations: {
     base: 'dist',
     commands: 'commands',
-    events: 'events'
+    events: 'events',
+    components: 'components'
   },
 })
