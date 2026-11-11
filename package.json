@@ -9,6 +9,7 @@
     "dev": "npm run build && DEV=true node --env-file=.env dist/main.js"
   },
   "imports": {
+    "#core/*": "./dist/core/*.js",
     "#config/*": "./dist/config/*.js",
     "#features/*": "./dist/features/*.js"
   },

@@ -1,6 +1,6 @@
 import { Client, type ParseClient } from 'seyfert'
 
-import { closeMongo, connectMongo } from './core/database/mongo.ts'
+import { closeMongo, connectMongo } from '#core/database/mongo'
 
 declare module 'seyfert' {
   interface SeyfertRegistry {
