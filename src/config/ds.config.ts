@@ -25,4 +25,8 @@ export const dsConfig = {
     initialGrowthBonus: 0.2,
     growthDecay: 28.5,
   },
+
+  reputation: {
+    pairCooldownMs: 7 * 24 * 60 * 60 * 1_000,
+  },
 } as const

@@ -1,3 +1,5 @@
+import type { ClientSession } from 'mongodb'
+
 import { getDb } from '#core/database/mongo'
 
 export interface MemberDocument {
@@ -5,6 +7,9 @@ export interface MemberDocument {
   createdAt: Date
   levels?: {
     totalXp: number
+  }
+  reputation?: {
+    total: number
   }
 }
 
@@ -29,4 +34,12 @@ export async function addXp(userId: string, amount: number): Promise<void> {
     },
     { upsert: true }
   )
+}
+
+export async function incrementReputation(userId: string, session: ClientSession): Promise<void> {
+  const result = await membersCollection().updateOne({ _id: userId }, { $inc: { 'reputation.total': 1 } }, { session })
+
+  if (result.matchedCount === 0) {
+    throw new Error(`Member ${userId} was not found`)
+  }
 }
