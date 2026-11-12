@@ -1,26 +1,37 @@
-import { Command, Declare, type CommandContext, AttachmentBuilder } from 'seyfert'
+import { Command, Declare, type CommandContext, AttachmentBuilder, createUserOption, Options } from 'seyfert'
 
 import { getLevelProgress } from '#features/levels/getLevelProgress'
 import { findMember } from '#repositories/membersRepository'
 import { renderHtmlToPng } from '#core/render/renderHtmlToPng'
 import { buildProfileHtml } from '../ui/profile/buildProfileHtml.ts'
 
+const options = {
+  member: createUserOption({
+    description: 'Чей профиль показать',
+    required: false,
+  }),
+}
+
 @Declare({
   name: 'profile',
   description: 'Показывает твой профиль на сервере',
 })
+@Options(options)
 export default class ProfileCommand extends Command {
-  async run(ctx: CommandContext) {
+  async run(ctx: CommandContext<typeof options>) {
     await ctx.deferReply(true)
 
     try {
-      const member = await findMember(ctx.author.id)
+      const target = ctx.options.member ?? ctx.member ?? ctx.author
+      const member = await findMember(target.id)
       const { level, progress } = getLevelProgress(member?.levels?.totalXp ?? 0)
-      const joinedTimestamp = ctx.member?.joinedTimestamp
+
+      const nickname = 'nick' in target ? target.nick : null
+      const joinedTimestamp = 'joinedTimestamp' in target ? target.joinedTimestamp : undefined
 
       const html = buildProfileHtml({
-        displayName: ctx.member?.nick ?? ctx.author.globalName ?? ctx.author.username,
-        avatarUrl: ctx.member?.avatarURL() ?? ctx.author.avatarURL(),
+        displayName: nickname ?? target.globalName ?? target.username,
+        avatarUrl: target.avatarURL(),
         joinedAt: joinedTimestamp == null ? null : new Date(joinedTimestamp),
         level,
         reputation: 0,
