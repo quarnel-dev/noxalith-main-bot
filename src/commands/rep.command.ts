@@ -44,10 +44,17 @@ export default class RepCommand extends Command {
       return
     }
 
-    await ctx.editResponse(
-      given
-        ? repResponse('Репутация выдана', `<@${target.id}> получил **+1** к репутации`, 0x57a880)
-        : repResponse('Плюс уже выдан', `Для <@${target.id}> ещё действует кулдаун`, 0xc49a55)
-    )
+    if (!given) {
+      await ctx.editResponse(repResponse('Плюс уже выдан', `Для <@${target.id}> ещё действует кулдаун`, 0xc49a55))
+      return
+    }
+
+    void target
+      .write(repResponse('+1 к репутации', `<@${ctx.author.id}> выдал тебе **+1** к репутации на сервере **Noxalith**`, 0x57a880))
+      .catch((error) => {
+        ctx.client.logger.debug('Не удалось отправить уведомление о репутации', error)
+      })
+
+    await ctx.editResponse(repResponse('Репутация выдана', `<@${target.id}> получил **+1** к репутации`, 0x57a880))
   }
 }
