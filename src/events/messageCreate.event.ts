@@ -9,8 +9,6 @@ export default createEvent({
   async run(message) {
     if (!guildId || message.guildId !== guildId || message.author.bot) return
 
-    console.info(`[messageCreate] Получено сообщение ${message.id}: ${message.content}`)
-    const xp = await awardMessageXp(message.author.id, message.content)
-    console.info(`[levels] ${message.id} → ${xp} XP начислено`)
+    await awardMessageXp(message.author.id, message.content)
   },
 })
