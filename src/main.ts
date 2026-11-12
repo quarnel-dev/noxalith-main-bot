@@ -1,5 +1,8 @@
 import { Client, type ParseClient } from 'seyfert'
 
+import { dsConfig } from '#config/ds.config'
+import { envConfig } from '#config/env.config'
+
 import { closeMongo, connectMongo } from '#core/database/mongo'
 
 declare module 'seyfert' {
@@ -8,18 +11,10 @@ declare module 'seyfert' {
   }
 }
 
-const guildIdKey = process.env.DEV === 'true' ? 'GUILD_ID_DEV' : 'GUILD_ID'
-const guildId = process.env[guildIdKey]
-
-const mongoUriKey = process.env.DEV === 'true' ? 'MONGODB_URI_DEV' : 'MONGODB_URI'
-const mongoUri = process.env[mongoUriKey]
-
-if (!guildId) throw new Error(`Missing ${guildIdKey}`)
-if (!mongoUri) throw new Error(`Missing ${mongoUriKey}`)
-
+const { guildId } = dsConfig
 const client = new Client()
 
-await connectMongo(mongoUri)
+await connectMongo(envConfig.mongoUri)
 console.info('[MongoDB] Connected')
 
 try {

@@ -1,13 +1,13 @@
 import { createEvent } from 'seyfert'
 
-import { awardMessageXp } from '../features/levels/awardMessageXp.ts'
+import { dsConfig } from '#config/ds.config'
 
-const guildId = process.env.DEV === 'true' ? process.env.GUILD_ID_DEV : process.env.GUILD_ID
+import { awardMessageXp } from '../features/levels/awardMessageXp.ts'
 
 export default createEvent({
   data: { name: 'messageCreate' },
   async run(message) {
-    if (!guildId || message.guildId !== guildId || message.author.bot) return
+    if (message.guildId !== dsConfig.guildId || message.author.bot) return
 
     await awardMessageXp(message.author.id, message.content)
   },

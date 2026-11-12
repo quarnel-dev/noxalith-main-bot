@@ -1,4 +1,4 @@
-const MAX_XP_PER_WORD = 4
+import { dsConfig } from "#config/ds.config"
 
 const wordCharacter = /[\p{L}\p{Nd}]/u
 const discordToken = /<(?:@&?\d+|#\d+|a?:[a-zA-Z0-9_]+:\d+)>/g
@@ -24,7 +24,7 @@ export function calculateMessageXp(content: string): number {
       continue
     }
 
-    if (char === previous || wordXp === MAX_XP_PER_WORD) continue
+    if (char === previous || wordXp === dsConfig.levels.maxXpPerWord) continue
 
     previous = char
     wordXp += 1

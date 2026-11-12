@@ -2,8 +2,7 @@ import { calculateMessageXp } from './calculateMessageXp.ts'
 
 import { addXp } from '#repositories/membersRepository'
 
-const WINDOW_MS = 45_000
-const WINDOW_XP = 100
+import { dsConfig } from '#config/ds.config'
 
 interface XpWindow {
   expiresAt: number
@@ -40,14 +39,14 @@ async function persistMessageXp(userId: string, content: string): Promise<number
   const key = getMessageKey(content)
   if (window?.seen.has(key)) return 0
 
-  const awarded = Math.min(xp, window?.remainingXp ?? WINDOW_XP)
+  const awarded = Math.min(xp, window?.remainingXp ?? dsConfig.levels.windowXp)
 
   await addXp(userId, awarded)
 
   if (!window) {
     const newWindow: XpWindow = {
-      expiresAt: now + WINDOW_MS,
-      remainingXp: WINDOW_XP,
+      expiresAt: now + dsConfig.levels.windowMs,
+      remainingXp: dsConfig.levels.windowXp,
       seen: new Set(),
     }
 
