@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "mongodb": "^7.8.0",
+    "playwright": "1.65.0",
     "seyfert": "5.2.1"
   },
   "devDependencies": {
