@@ -2,14 +2,17 @@ import { envConfig } from './env.config.ts'
 
 interface ServerConfig {
   guildId: string
+  ignoreChannels: readonly string[]
 }
 
 const servers = {
   dev: {
     guildId: envConfig.guildIds.dev,
+    ignoreChannels: ['1487143783685554257'],
   },
   prod: {
     guildId: envConfig.guildIds.prod,
+    ignoreChannels: ['1566458384872513646'],
   },
 } as const satisfies Record<'dev' | 'prod', ServerConfig>
 
