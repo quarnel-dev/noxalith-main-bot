@@ -12,7 +12,7 @@ const servers = {
   },
   prod: {
     guildId: envConfig.guildIds.prod,
-    ignoreChannels: ['1566458384872513646'],
+    ignoreChannels: ['1566458384872513646', '1566816052870910143', '1566458271500607590'],
   },
 } as const satisfies Record<'dev' | 'prod', ServerConfig>
 
