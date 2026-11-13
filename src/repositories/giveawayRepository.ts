@@ -6,7 +6,9 @@ export interface GiveawayDocument {
   _id: string
   guildId: string
   channelId: string
-  prize: string
+  prize?: string
+  prizeId?: string
+  prizeText?: string
   endsAt: Date
   requirements: GiveawayRequirement[]
   status: 'open' | 'closed'
@@ -14,8 +16,10 @@ export interface GiveawayDocument {
   winnerIds: string[]
 }
 
-type CreateGiveawayInput = Pick<GiveawayDocument, 'guildId' | 'channelId' | 'prize' | 'endsAt' | 'requirements'> & {
+type CreateGiveawayInput = Pick<GiveawayDocument, 'guildId' | 'channelId' | 'endsAt' | 'requirements'> & {
   messageId: string
+  prizeId: string
+  prizeText: string
 }
 
 function giveawaysCollection() {
