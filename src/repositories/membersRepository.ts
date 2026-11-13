@@ -25,17 +25,22 @@ export function findMember(userId: string): Promise<MemberDocument | null> {
   return membersCollection().findOne({ _id: userId })
 }
 
-export async function addXp(userId: string, amount: number): Promise<void> {
-  await membersCollection().updateOne(
+export async function addXp(userId: string, amount: number): Promise<number> {
+  const previous = await membersCollection().findOneAndUpdate(
     { _id: userId },
     {
       $setOnInsert: { createdAt: new Date() },
       $inc: { 'levels.totalXp': amount },
     },
-    { upsert: true }
+    {
+      upsert: true,
+      returnDocument: 'before',
+      projection: { 'levels.totalXp': 1 },
+    }
   )
-}
 
+  return previous?.levels?.totalXp ?? 0
+}
 export async function incrementReputation(userId: string, session: ClientSession): Promise<void> {
   const result = await membersCollection().updateOne({ _id: userId }, { $inc: { 'reputation.total': 1 } }, { session })
 
