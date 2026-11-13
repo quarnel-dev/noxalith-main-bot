@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto'
 
-import type { UsingClient } from 'seyfert'
+import { SeyfertError, type UsingClient } from 'seyfert'
 
 import {
   drawGiveawayWinner,
@@ -33,7 +33,18 @@ export function startGiveawayWorker(client: UsingClient, guildId: string): void 
             available: giveaway.participantIds.some((id) => !giveaway.winnerIds.includes(id)),
           })
 
-          await client.messages.edit(giveaway._id, giveaway.channelId, card)
+          try {
+            await client.messages.edit(giveaway._id, giveaway.channelId, card)
+          } catch (error) {
+            if (!SeyfertError.is(error)) throw error
+
+            const response = error.metadata?.response
+            if (typeof response !== 'object' || response === null || !('code' in response) || response.code !== 10008) {
+              throw error
+            }
+
+            client.logger.warn(`Карточка розыгрыша ${giveaway._id} удалена, публикую итог в канале`)
+          }
 
           const template = giveaway.prizeId ? getGiveawayPrize(giveaway.prizeId) : undefined
           const prize = template?.prizeName || giveaway.prizeText || giveaway.prize || template?.label || 'приз розыгрыша'
