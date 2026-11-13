@@ -43,11 +43,11 @@ export function startGiveawayWorker(client: UsingClient, guildId: string): void 
 
           const content = winnerId
             ? [
-                round > 1 ? `🎉 Новый победитель розыгрыша — <@${winnerId}>!` : `🎉 <@${winnerId}>, поздравляем с победой!`,
-                `Ты выиграл **${prize}**.`,
-                `Чтобы забрать приз, напиши ${organizer} в ЛС до <t:${deadline}:F>.`,
+                round > 1 ? `🎉 Поздравляем нового победителя <@${winnerId}>!` : `🎉 <@${winnerId}>, поздравляем с победой!`,
+                `**Приз:** ${prize}`,
+                `Напиши ${organizer} в ЛС до <t:${deadline}:F>, чтобы забрать приз`,
               ].join('\n')
-            : 'Розыгрыш завершён. Участников не было.'
+            : 'Розыгрыш завершён без участников'
 
           await client.messages.write(giveaway.channelId, {
             content,
