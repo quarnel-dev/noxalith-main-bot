@@ -1,3 +1,5 @@
+import { randomInt } from 'node:crypto'
+
 import { getDb } from '#core/database/mongo'
 
 export type GiveawayRequirement = string
@@ -9,6 +11,8 @@ export interface GiveawayDocument {
   prize?: string
   prizeId?: string
   prizeText?: string
+  organizerId?: string
+  resultPending?: boolean
   endsAt: Date
   requirements: GiveawayRequirement[]
   status: 'open' | 'closed'
@@ -20,6 +24,7 @@ type CreateGiveawayInput = Pick<GiveawayDocument, 'guildId' | 'channelId' | 'end
   messageId: string
   prizeId: string
   prizeText: string
+  organizerId: string
 }
 
 function giveawaysCollection() {
@@ -55,4 +60,53 @@ export async function addGiveawayParticipant(messageId: string, userId: string):
 
   if (!previous) return 'closed'
   return previous.participantIds.includes(userId) ? 'alreadyJoined' : 'joined'
+}
+
+export function findGiveawaysToFinish(guildId: string) {
+  return giveawaysCollection()
+    .find({
+      guildId,
+      $or: [
+        { status: 'open', endsAt: { $lte: new Date() } },
+        { status: 'closed', resultPending: true },
+      ],
+    })
+    .toArray()
+}
+
+export async function drawGiveawayWinner(giveaway: GiveawayDocument, mode: 'finish' | 'reroll'): Promise<boolean> {
+  const candidates = giveaway.participantIds.filter((id) => !giveaway.winnerIds.includes(id))
+
+  if (mode === 'reroll' && candidates.length === 0) return false
+
+  const winnerIds = [...giveaway.winnerIds]
+  if (candidates.length > 0) {
+    winnerIds.push(candidates[randomInt(candidates.length)]!)
+  }
+
+  const result = await giveawaysCollection().updateOne(
+    {
+      _id: giveaway._id,
+      status: mode === 'finish' ? 'open' : 'closed',
+      endsAt: { $lte: new Date() },
+      resultPending: { $ne: true },
+      participantIds: giveaway.participantIds,
+      winnerIds: giveaway.winnerIds,
+    },
+    { $set: { status: 'closed', winnerIds, resultPending: true } }
+  )
+
+  return result.modifiedCount === 1
+}
+
+export async function markGiveawayResultPublished(giveaway: GiveawayDocument): Promise<void> {
+  await giveawaysCollection().updateOne(
+    {
+      _id: giveaway._id,
+      status: 'closed',
+      winnerIds: giveaway.winnerIds,
+      resultPending: true,
+    },
+    { $set: { resultPending: false } }
+  )
 }

@@ -7,6 +7,7 @@ export interface GiveawayPrize {
   id: string
   label: string
   requiresText?: boolean
+  prizeName?: string
   attachment?: { name: string; path: URL }
   render(card: Container, text: string): void
 }

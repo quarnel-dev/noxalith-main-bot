@@ -7,9 +7,12 @@ const banner = {
   path: new URL('../../../../assets/giveaways/discordnitro.png', import.meta.url),
 }
 
+const prizeName = 'Discord Nitro Full на 1 месяц'
+
 export const nitroPrize = {
   id: 'nitro',
   label: 'Discord Nitro',
+  prizeName,
   attachment: banner,
 
   render(card, text) {
@@ -17,7 +20,6 @@ export const nitroPrize = {
       new MediaGalleryItem().setMedia(`attachment://${banner.name}`).setDescription('Баннер розыгрыша Discord Nitro')
     )
 
-    card
-      .addComponents(gallery, new TextDisplay().setContent('## Розыгрыш Discord Nitro\n**Приз:** Discord Nitro Full на 1 месяц'))
+    card.addComponents(gallery, new TextDisplay().setContent(`## Розыгрыш Discord Nitro\n**Приз:** ${prizeName}`))
   },
 } satisfies GiveawayPrize

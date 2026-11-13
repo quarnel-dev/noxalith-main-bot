@@ -5,6 +5,8 @@ import { envConfig } from '#config/env.config'
 
 import { closeMongo, connectMongo } from '#core/database/mongo'
 
+import { startGiveawayWorker } from '#features/giveaways/startGiveawayWorker'
+
 declare module 'seyfert' {
   interface SeyfertRegistry {
     client: ParseClient<Client<true>>
@@ -32,6 +34,8 @@ try {
     .commands.put({
       body: commands.map((command) => command.toJSON()),
     })
+
+  startGiveawayWorker(client, guildId)
 } catch (error) {
   await closeMongo().catch((closeError) => {
     console.error('[MongoDB] Failed to close connection', closeError)

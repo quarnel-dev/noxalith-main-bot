@@ -7,6 +7,7 @@ import { getGiveawayPrize } from './giveawayPrizes.ts'
 import { customPrize } from './prizes/custom.ts'
 
 export const GIVEAWAY_JOIN_ID = 'giveaway:join'
+export const GIVEAWAY_REROLL_PREFIX = 'giveaway:reroll:'
 
 type GiveawayCardData = {
   prize?: string
@@ -16,7 +17,7 @@ type GiveawayCardData = {
   requirements: GiveawayRequirement[]
 }
 
-export function buildGiveawayCard(giveaway: GiveawayCardData, disabled: boolean) {
+export function buildGiveawayCard(giveaway: GiveawayCardData, disabled: boolean, reroll?: { round: number; available: boolean }) {
   const { prize, prizeId, prizeText, endsAt, requirements } = giveaway
   const template = (prizeId ? getGiveawayPrize(prizeId) : undefined) ?? customPrize
   const card = new Container()
@@ -35,7 +36,13 @@ export function buildGiveawayCard(giveaway: GiveawayCardData, disabled: boolean)
   card.addComponents(
     new TextDisplay().setContent(lines.join('\n')),
     new ActionRow<Button>().setComponents([
-      new Button().setCustomId(GIVEAWAY_JOIN_ID).setLabel('Участвовать').setStyle(ButtonStyle.Primary).setDisabled(disabled),
+      reroll
+        ? new Button()
+            .setCustomId(`${GIVEAWAY_REROLL_PREFIX}${reroll.round}`)
+            .setLabel('Перевыбрать')
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(!reroll.available)
+        : new Button().setCustomId(GIVEAWAY_JOIN_ID).setLabel('Участвовать').setStyle(ButtonStyle.Primary).setDisabled(disabled),
     ])
   )
 

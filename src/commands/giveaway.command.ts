@@ -109,6 +109,7 @@ class GiveawayStartCommand extends SubCommand {
         messageId: message.id,
         guildId,
         channelId: ctx.channelId,
+        organizerId: ctx.author.id,
       })
 
       await ctx.client.messages.edit(message.id, ctx.channelId, buildGiveawayCard(giveaway, false))
