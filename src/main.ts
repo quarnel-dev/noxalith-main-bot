@@ -6,6 +6,7 @@ import { envConfig } from '#config/env.config'
 import { closeMongo, connectMongo } from '#core/database/mongo'
 
 import { startGiveawayWorker } from '#features/giveaways/startGiveawayWorker'
+import { startActiveMemberWorker } from '#features/activity/startActiveMemberWorker'
 
 declare module 'seyfert' {
   interface SeyfertRegistry {
@@ -36,6 +37,7 @@ try {
     })
 
   startGiveawayWorker(client, guildId)
+  startActiveMemberWorker(client)
 } catch (error) {
   await closeMongo().catch((closeError) => {
     console.error('[MongoDB] Failed to close connection', closeError)
