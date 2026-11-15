@@ -8,9 +8,8 @@ export interface MemberDocument {
   levels?: {
     totalXp: number
   }
-  reputation?: {
-    total: number
-  }
+  reputation?: number
+  activeMemberUntil?: Date
 }
 
 function membersCollection() {
@@ -41,10 +40,32 @@ export async function addXp(userId: string, amount: number): Promise<number> {
 
   return previous?.levels?.totalXp ?? 0
 }
+
 export async function incrementReputation(userId: string, session: ClientSession): Promise<void> {
   const result = await membersCollection().updateOne({ _id: userId }, { $inc: { 'reputation.total': 1 } }, { session })
 
   if (result.matchedCount === 0) {
     throw new Error(`Member ${userId} was not found`)
   }
+}
+
+export async function setActiveMemberUntil(userId: string, until: Date): Promise<void> {
+  await membersCollection().updateOne(
+    { _id: userId },
+    {
+      $setOnInsert: { createdAt: new Date() },
+      $set: { activeMemberUntil: until },
+    },
+    { upsert: true }
+  )
+}
+
+export function findMembersWithExpiredActiveRole(now: Date): Promise<MemberDocument[]> {
+  return membersCollection()
+    .find({ activeMemberUntil: { $lte: now } })
+    .toArray()
+}
+
+export async function clearActiveMemberUntil(userId: string): Promise<void> {
+  await membersCollection().updateOne({ _id: userId }, { $unset: { activeMemberUntil: '' } })
 }
