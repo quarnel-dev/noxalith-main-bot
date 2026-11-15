@@ -2,7 +2,8 @@ import { createEvent } from 'seyfert'
 
 import { dsConfig } from '#config/ds.config'
 
-import { awardMessageXp } from '../features/levels/awardMessageXp.ts'
+import { awardMessageXp } from '#features/levels/awardMessageXp'
+import { recordMessageActivity } from '#features/activity/recordMessageActivity'
 
 const ignoredChannelIds = new Set<string>(dsConfig.ignoreChannels)
 
@@ -12,7 +13,12 @@ export default createEvent({
     if (message.guildId !== dsConfig.guildId || message.author.bot) return
     if (ignoredChannelIds.has(message.channelId)) return
 
-    const level = await awardMessageXp(message.author.id, message.content)
+    const [level] = await Promise.all([
+      awardMessageXp(message.author.id, message.content),
+      recordMessageActivity(message.author.id, message.content, message.timestamp ?? Date.now()).catch((error) => {
+        client.logger.error('Не удалось записать активность участника', error)
+      }),
+    ])
     if (level === null) return
 
     const notice = await client.messages.write(message.channelId, {
