@@ -34,7 +34,7 @@ export default class ProfileCommand extends Command {
         avatarUrl: target.avatarURL(),
         joinedAt: joinedTimestamp == null ? null : new Date(joinedTimestamp),
         level,
-        reputation: member?.reputation ?? 0,
+        reputation: member?.reputation?.total ?? 0,
         progress,
       })
 

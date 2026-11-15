@@ -8,7 +8,9 @@ export interface MemberDocument {
   levels?: {
     totalXp: number
   }
-  reputation?: number
+  reputation?: {
+    total: number
+  }
   activeMemberUntil?: Date
 }
 
