@@ -3,16 +3,19 @@ import { envConfig } from './env.config.ts'
 interface ServerConfig {
   guildId: string
   ignoreChannels: readonly string[]
+  activeMemberRoleId: string
 }
 
 const servers = {
   dev: {
     guildId: envConfig.guildIds.dev,
     ignoreChannels: ['1487143783685554257'],
+    activeMemberRoleId: '1571433087051501588',
   },
   prod: {
     guildId: envConfig.guildIds.prod,
     ignoreChannels: ['1566458384872513646', '1566816052870910143', '1566458271500607590'],
+    activeMemberRoleId: '1566466063309209620',
   },
 } as const satisfies Record<'dev' | 'prod', ServerConfig>
 
@@ -27,6 +30,12 @@ export const dsConfig = {
     firstLevelXp: 300,
     initialGrowthBonus: 0.2,
     growthDecay: 28.5,
+  },
+
+  activity: {
+    dailyTokenThreshold: 500,
+    roleDurationDays: 3,
+    timeZone: 'Europe/Moscow',
   },
 
   reputation: {
