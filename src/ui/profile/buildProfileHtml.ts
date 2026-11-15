@@ -69,7 +69,7 @@ export function buildProfileHtml(data: ProfileCardData): string {
       padding: 16px;
       display: grid;
       place-items: center;
-      background: #0c121b;
+      background: transparent;
       color: #edf4fa;
       font-family: Geist, system-ui, sans-serif;
     }

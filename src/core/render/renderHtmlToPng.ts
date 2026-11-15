@@ -38,6 +38,7 @@ export async function renderHtmlToPng(html: string, selector: string): Promise<B
 
     return await page.locator(selector).screenshot({
       type: 'png',
+      omitBackground: true,
       timeout: 5_000,
     })
   } finally {
