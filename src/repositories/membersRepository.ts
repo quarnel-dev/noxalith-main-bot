@@ -71,3 +71,24 @@ export function findMembersWithExpiredActiveRole(now: Date): Promise<MemberDocum
 export async function clearActiveMemberUntil(userId: string): Promise<void> {
   await membersCollection().updateOne({ _id: userId }, { $unset: { activeMemberUntil: '' } })
 }
+
+export function findTopMembers(limit = 10): Promise<MemberDocument[]> {
+  return membersCollection()
+    .find({ 'levels.totalXp': { $gt: 0 } })
+    .sort({ 'levels.totalXp': -1, _id: 1 })
+    .limit(limit)
+    .toArray()
+}
+
+export async function findMemberXpRank(userId: string): Promise<number | null> {
+  const member = await findMember(userId)
+  const totalXp = member?.levels?.totalXp
+
+  if (totalXp === undefined || totalXp <= 0) return null
+
+  const ahead = await membersCollection().countDocuments({
+    $or: [{ 'levels.totalXp': { $gt: totalXp } }, { 'levels.totalXp': totalXp, _id: { $lt: userId } }],
+  })
+
+  return ahead + 1
+}
