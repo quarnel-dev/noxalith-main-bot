@@ -1,3 +1,5 @@
+import { MongoServerError } from 'mongodb'
+
 import { getDb } from '#core/database/mongo'
 
 interface DailyActivity {
@@ -5,6 +7,7 @@ interface DailyActivity {
   userId: string
   day: string
   tokens: number
+  conversationBonusIds?: string[]
 }
 
 export async function addDailyActivityTokens(userId: string, day: string, tokens: number): Promise<void> {
@@ -27,4 +30,26 @@ export async function findActiveUsers(day: string, threshold: number): Promise<s
     .toArray()
 
   return records.map((record) => record.userId)
+}
+
+export async function addConversationBonusTokens(userId: string, day: string, messageId: string, tokens: number): Promise<void> {
+  try {
+    await getDb()
+      .collection<DailyActivity>('dailyActivity')
+      .updateOne(
+        {
+          _id: `${day}:${userId}`,
+          conversationBonusIds: { $ne: messageId },
+        },
+        {
+          $setOnInsert: { userId, day },
+          $inc: { tokens },
+          $addToSet: { conversationBonusIds: messageId },
+        },
+        { upsert: true }
+      )
+  } catch (error) {
+    if (error instanceof MongoServerError && error.code === 11000) return
+    throw error
+  }
 }
