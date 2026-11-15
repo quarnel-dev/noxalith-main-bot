@@ -13,8 +13,8 @@ import { getLastProcessedActivityDay, setLastProcessedActivityDay } from '#repos
 
 import { getActivityDay, previousActivityDay } from './activityDay.ts'
 
-const DAY_MS = 86_400_000
-const CHECK_INTERVAL_MS = 60_000
+const DAY_MS = dsConfig.activity.dayMs
+const CHECK_INTERVAL_MS = dsConfig.activity.checkIntervalMs
 
 function nextDay(day: string): string {
   return new Date(Date.parse(`${day}T00:00:00Z`) + DAY_MS).toISOString().slice(0, 10)

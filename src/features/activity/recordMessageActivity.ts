@@ -1,7 +1,5 @@
 import { addDailyActivityTokens } from '#repositories/activityRepository'
 
-import { dsConfig } from '#config/ds.config'
-
 import { countActivityTokens } from './countActivityTokens.ts'
 import { getActivityDay } from './activityDay.ts'
 

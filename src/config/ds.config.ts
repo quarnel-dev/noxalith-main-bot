@@ -33,6 +33,8 @@ export const dsConfig = {
   },
 
   activity: {
+    dayMs: 86_400_000,
+    checkIntervalMs: 60_000,
     dailyTokenThreshold: 500,
     roleDurationDays: 3,
     timeZone: 'Europe/Moscow',
