@@ -6,7 +6,7 @@ Features: levels, profiles, reputation, activity roles and giveaways.
 
 ## Setup
 
-Requires Node.js 24, MongoDB with replica set support, and Chromium for profile cards.
+Node.js 24 is recommended. MongoDB with replica set support and Chromium are required.
 
 ```bash
 npm ci
