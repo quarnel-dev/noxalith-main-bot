@@ -1,7 +1,6 @@
 import { envConfig } from './env.config.ts'
 
 interface ServerConfig {
-  guildId: string
   ignoreChannels: readonly string[]
   activeMemberRoleId: string
   mainChatChannelId: string
@@ -9,13 +8,11 @@ interface ServerConfig {
 
 const servers = {
   dev: {
-    guildId: envConfig.guildIds.dev,
     ignoreChannels: ['1487143783685554257'],
     activeMemberRoleId: '1571433087051501588',
     mainChatChannelId: '1486724978178261105',
   },
   prod: {
-    guildId: envConfig.guildIds.prod,
     ignoreChannels: ['1566458384872513646', '1566816052870910143', '1566458271500607590'],
     activeMemberRoleId: '1566466063309209620',
     mainChatChannelId: '1566458324868931634',
@@ -24,6 +21,7 @@ const servers = {
 
 export const dsConfig = {
   ...servers[envConfig.isDev ? 'dev' : 'prod'],
+  guildId: envConfig.guildId,
 
   levels: {
     windowMs: 45_000,

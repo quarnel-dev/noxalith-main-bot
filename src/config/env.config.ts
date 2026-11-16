@@ -12,11 +12,6 @@ const isDev = process.env.DEV === 'true'
 
 export const envConfig = {
   isDev,
-
-  guildIds: {
-    dev: requireEnv('GUILD_ID_DEV'),
-    prod: requireEnv('GUILD_ID'),
-  },
-
+  guildId: requireEnv(isDev ? 'GUILD_ID_DEV' : 'GUILD_ID'),
   mongoUri: requireEnv(isDev ? 'MONGODB_URI_DEV' : 'MONGODB_URI'),
 } as const
