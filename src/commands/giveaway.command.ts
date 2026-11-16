@@ -6,7 +6,7 @@ import type { CommandContext } from 'seyfert'
 import { buildGiveawayCard } from '#features/giveaways/buildGiveawayCard'
 import { giveawayPrizeChoices, getGiveawayPrize } from '#features/giveaways/giveawayPrizes'
 import { giveawayRequirementChoices, getGiveawayRule } from '#features/giveaways/giveawayRequirements'
-import { createGiveaway } from '#repositories/giveawayRepository'
+import { createGiveaway, openGiveaway } from '#repositories/giveawayRepository'
 
 const options = {
   prize: createStringOption({
@@ -92,34 +92,58 @@ class GiveawayStartCommand extends SubCommand {
       requirements: requirementId ? [requirementId] : [],
     }
 
+    let messageId: string
+
     try {
-      const card = buildGiveawayCard(giveaway, true)
       const attachment = prizeTemplate.attachment
       const files = attachment
         ? [new AttachmentBuilder().setName(attachment.name).setFile('buffer', await readFile(attachment.path))]
         : []
 
       const message = await ctx.client.messages.write(ctx.channelId, {
-        ...card,
+        ...buildGiveawayCard(giveaway, true),
         files,
       })
 
+      messageId = message.id
+    } catch (error) {
+      ctx.client.logger.error('Не удалось опубликовать карточку розыгрыша', error)
+      await ctx.editResponse({ content: 'Не удалось создать розыгрыш' })
+      return
+    }
+
+    try {
       await createGiveaway({
         ...giveaway,
-        messageId: message.id,
+        messageId,
         guildId,
         channelId: ctx.channelId,
         organizerId: ctx.author.id,
       })
-
-      await ctx.client.messages.edit(message.id, ctx.channelId, buildGiveawayCard(giveaway, false))
     } catch (error) {
-      ctx.client.logger.error('Не удалось запустить розыгрыш', error)
-      await ctx.editResponse({ content: 'Не удалось открыть приём заявок' })
+      ctx.client.logger.error(`Не удалось записать розыгрыш ${messageId}`, error)
+
+      try {
+        await ctx.client.messages.delete(messageId, ctx.channelId)
+      } catch (cleanupError) {
+        ctx.client.logger.error(`Не удалось удалить неактивную карточку ${messageId}`, cleanupError)
+      }
+
+      await ctx.editResponse({ content: 'Не удалось создать розыгрыш' })
       return
     }
 
-    await ctx.editResponse({ content: 'Розыгрыш запущен' })
+    try {
+      await ctx.client.messages.edit(messageId, ctx.channelId, buildGiveawayCard(giveaway, false))
+      await openGiveaway(messageId)
+
+      await ctx.editResponse({ content: 'Розыгрыш запущен' })
+    } catch (error) {
+      ctx.client.logger.error(`Не удалось сразу открыть розыгрыш ${messageId}`, error)
+      await ctx.editResponse({
+        content: 'Карточка создана, но приём заявок пока не открыт. Бот повторит попытку автоматически',
+      })
+    }
   }
 }
 

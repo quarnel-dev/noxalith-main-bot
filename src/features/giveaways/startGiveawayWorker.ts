@@ -3,18 +3,45 @@ import { createHash } from 'node:crypto'
 import { SeyfertError, type UsingClient } from 'seyfert'
 
 import {
+  cancelDraftGiveaway,
   drawGiveawayWinner,
   findGiveaway,
   findGiveawaysToFinish,
+  findGiveawaysToOpen,
   markGiveawayResultPublished,
+  openGiveaway,
 } from '#repositories/giveawayRepository'
 
 import { buildGiveawayCard } from './buildGiveawayCard.ts'
 import { getGiveawayPrize } from './giveawayPrizes.ts'
 
+function messageWasDeleted(error: unknown): boolean {
+  if (!SeyfertError.is(error)) return false
+
+  const response = error.metadata?.response
+  return typeof response === 'object' && response !== null && 'code' in response && response.code === 10008
+}
+
 export function startGiveawayWorker(client: UsingClient, guildId: string): void {
   async function tick(): Promise<void> {
     try {
+      const drafts = await findGiveawaysToOpen(guildId)
+
+      for (const draft of drafts) {
+        try {
+          await client.messages.edit(draft._id, draft.channelId, buildGiveawayCard(draft, false))
+
+          await openGiveaway(draft._id)
+        } catch (error) {
+          if (messageWasDeleted(error)) {
+            await cancelDraftGiveaway(draft._id)
+            client.logger.warn(`Карточка розыгрыша ${draft._id} удалена, черновик отменён`)
+          } else {
+            client.logger.error(`Не удалось открыть розыгрыш ${draft._id}`, error)
+          }
+        }
+      }
+
       const giveaways = await findGiveawaysToFinish(guildId)
 
       for (const pending of giveaways) {
@@ -36,12 +63,7 @@ export function startGiveawayWorker(client: UsingClient, guildId: string): void 
           try {
             await client.messages.edit(giveaway._id, giveaway.channelId, card)
           } catch (error) {
-            if (!SeyfertError.is(error)) throw error
-
-            const response = error.metadata?.response
-            if (typeof response !== 'object' || response === null || !('code' in response) || response.code !== 10008) {
-              throw error
-            }
+            if (!messageWasDeleted(error)) throw error
 
             client.logger.warn(`Карточка розыгрыша ${giveaway._id} удалена, публикую итог в канале`)
           }
@@ -73,7 +95,7 @@ export function startGiveawayWorker(client: UsingClient, guildId: string): void 
         }
       }
     } catch (error) {
-      client.logger.error('Не удалось проверить завершённые розыгрыши', error)
+      client.logger.error('Не удалось проверить розыгрыши', error)
     } finally {
       setTimeout(() => void tick(), 5_000).unref()
     }

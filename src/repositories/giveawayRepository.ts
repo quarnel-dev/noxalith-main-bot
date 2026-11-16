@@ -15,7 +15,7 @@ export interface GiveawayDocument {
   resultPending?: boolean
   endsAt: Date
   requirements: GiveawayRequirement[]
-  status: 'open' | 'closed'
+  status: 'draft' | 'open' | 'closed' | 'cancelled'
   participantIds: string[]
   winnerIds: string[]
 }
@@ -37,10 +37,22 @@ export async function createGiveaway(input: CreateGiveawayInput): Promise<void> 
   await giveawaysCollection().insertOne({
     _id: messageId,
     ...giveaway,
-    status: 'open',
+    status: 'draft',
     participantIds: [],
     winnerIds: [],
   })
+}
+
+export async function openGiveaway(messageId: string): Promise<void> {
+  await giveawaysCollection().updateOne({ _id: messageId, status: 'draft' }, { $set: { status: 'open' } })
+}
+
+export async function cancelDraftGiveaway(messageId: string): Promise<void> {
+  await giveawaysCollection().updateOne({ _id: messageId, status: 'draft' }, { $set: { status: 'cancelled' } })
+}
+
+export function findGiveawaysToOpen(guildId: string): Promise<GiveawayDocument[]> {
+  return giveawaysCollection().find({ guildId, status: 'draft' }).toArray()
 }
 
 export function findGiveaway(messageId: string): Promise<GiveawayDocument | null> {
@@ -62,7 +74,7 @@ export async function addGiveawayParticipant(messageId: string, userId: string):
   return previous.participantIds.includes(userId) ? 'alreadyJoined' : 'joined'
 }
 
-export function findGiveawaysToFinish(guildId: string) {
+export function findGiveawaysToFinish(guildId: string): Promise<GiveawayDocument[]> {
   return giveawaysCollection()
     .find({
       guildId,
